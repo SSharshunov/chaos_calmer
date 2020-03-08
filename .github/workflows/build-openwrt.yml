@@ -33,6 +33,18 @@ env:
 
 jobs:
   build:
+    name: ${{ openipc.config.name }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      openipc:
+        config:
+          - name: 📦hi3516cv200
+            SOC: hi3516cv200
+            kernel_patch: 4.9.37
+            # cc: arm-hisiv500-linux-gcc
+            artifact: hi3516cv200.tar.xz
+
     runs-on: ubuntu-latest
     if: github.event.repository.owner.id == github.event.sender.id
 
@@ -55,19 +67,19 @@ jobs:
     - name: Clone source code
       run: git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
 
-    - name: Update feeds
-      run: cd openwrt && ./scripts/feeds update -a
-
-    - name: Install feeds
-      run: cd openwrt && ./scripts/feeds install -a
-
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_SH
         cd openwrt
-        ../$DIY_SH
+        ../$DIY_SH ${{ openipc.config.SOC }} ${{ kernel_patch }}
+
+    - name: Update feeds
+      run: cd openwrt && ./scripts/feeds update -a
+
+    - name: Install feeds
+      run: cd openwrt && ./scripts/feeds install -a
 
     - name: SSH connection to Actions
       uses: P3TERX/debugger-action@master
@@ -78,7 +90,7 @@ jobs:
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j1 V=s
+        make -j$(nproc) V=s
         echo "::set-output name=status::success"
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
