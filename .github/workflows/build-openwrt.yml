@@ -77,7 +77,7 @@ jobs:
       run: |
         [ -e files ] && mv files openwrt/files
         ls openwrt/
-        [ -e $CONFIG_FILE ] && cp openwrt/target/linux/hi35xx/.${{ matrix.config.config_file }} openwrt/.config
+        [ -e $CONFIG_FILE ] && cp openwrt/target/linux/hi35xx/${{ matrix.config.config_file }} openwrt/.config
         chmod +x $DIY_SH
         cd openwrt
         ../$DIY_SH ${{ matrix.config.SOC }} ${{ matrix.config.kernel_patch }}
