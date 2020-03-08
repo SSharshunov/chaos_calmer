@@ -71,7 +71,7 @@ jobs:
       run: |
         cd openwrt
         curl -fsSL https://raw.githubusercontent.com/SSharshunov/chaos_calmer/4.9-test/4.9.patch >> 4.9.patch
-        git apply 4.9.patch
+        git apply --whitespace=nowarn 4.9.patch
 
     - name: Load custom configuration
       run: |
