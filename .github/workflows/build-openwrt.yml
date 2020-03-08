@@ -72,21 +72,21 @@ jobs:
         cd openwrt
         curl -fsSL https://raw.githubusercontent.com/SSharshunov/chaos_calmer/4.9-test/4.9.patch >> 4.9.patch
         git apply --whitespace=nowarn 4.9.patch
+        rm -f 4.9.patch
+
+    - name: Update feeds
+      run: cd openwrt && ./scripts/feeds update glutinium openipc
+
+    - name: Install feeds
+      run: cd openwrt && ./scripts/feeds install -a
 
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
-        ls openwrt/
         [ -e $CONFIG_FILE ] && cp openwrt/target/linux/hi35xx/${{ matrix.config.config_file }} openwrt/.config
         chmod +x $DIY_SH
         cd openwrt
         ../$DIY_SH ${{ matrix.config.SOC }} ${{ matrix.config.kernel_patch }}
-
-    - name: Update feeds
-      run: cd openwrt && ./scripts/feeds update -a
-
-    - name: Install feeds
-      run: cd openwrt && ./scripts/feeds install -a
 
     - name: SSH connection to Actions
       uses: P3TERX/debugger-action@master

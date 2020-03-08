@@ -14,7 +14,7 @@ if [ $# -ge 1 ]; then
   build=$1
   vendor=$2
 fi
-
+ 
 # case $build in
 #   hi3516cv100|hi3518av100|hi3518ev100)
 #     SOC=${build}
