@@ -33,11 +33,11 @@ env:
 
 jobs:
   build:
-    name: ${{ openipc.config.name }}
+    name: ${{ matrix.config.name }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      openipc:
+      matrix:
         config:
           - name: 📦hi3516cv200
             SOC: hi3516cv200
@@ -79,7 +79,7 @@ jobs:
         [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
         chmod +x $DIY_SH
         cd openwrt
-        ../$DIY_SH ${{ openipc.config.SOC }} ${{ kernel_patch }}
+        ../$DIY_SH ${{ matrix.config.SOC }} ${{ matrix.config.kernel_patch }}
 
     - name: Update feeds
       run: cd openwrt && ./scripts/feeds update -a
