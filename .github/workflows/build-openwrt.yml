@@ -41,6 +41,7 @@ jobs:
           - name: 📦hi3516cv200
             SOC: hi3516cv200
             kernel_patch: 4.9.37
+            config_file: config-4.9.37
             # cc: arm-hisiv500-linux-gcc
             artifact: hi3516cv200.tar.xz
 
@@ -75,7 +76,7 @@ jobs:
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
+        [ -e $CONFIG_FILE ] && cp openwrt/target/linux/hi35xx/.${{ matrix.config.config_file }} openwrt/.config
         chmod +x $DIY_SH
         cd openwrt
         ../$DIY_SH ${{ matrix.config.SOC }} ${{ matrix.config.kernel_patch }}
