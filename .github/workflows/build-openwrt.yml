@@ -83,7 +83,6 @@ jobs:
     - name: Load custom configuration
       run: |
         [ -e files ] && mv files openwrt/files
-#       [ -e $CONFIG_FILE ] && cp openwrt/target/linux/hi35xx/${{ matrix.config.config_file }} openwrt/.config
         [ -e $CONFIG_FILE ] && mv ${{ matrix.config.config_file }} openwrt/.config
         chmod +x $DIY_SH
         cd openwrt
