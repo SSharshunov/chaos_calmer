@@ -33,15 +33,15 @@ env:
 
 jobs:
   build:
-    name: ${{ openipc.config.name }}
-    runs-on: ubuntu-latest
+    name: ${{ matrix.config.name }}
     strategy:
       fail-fast: false
-      openipc:
+      matrix:
         config:
           - name: 📦hi3516cv200
             SOC: hi3516cv200
             kernel_patch: 4.9.37
+            config_file: wrt-config-4.9.37
             # cc: arm-hisiv500-linux-gcc
             artifact: hi3516cv200.tar.xz
 
@@ -67,19 +67,26 @@ jobs:
     - name: Clone source code
       run: git clone --depth 1 $REPO_URL -b $REPO_BRANCH openwrt
 
-    - name: Load custom configuration
+    - name: Apply patch to source code
       run: |
-        [ -e files ] && mv files openwrt/files
-        [ -e $CONFIG_FILE ] && mv $CONFIG_FILE openwrt/.config
-        chmod +x $DIY_SH
         cd openwrt
-        ../$DIY_SH ${{ openipc.config.SOC }} ${{ kernel_patch }}
+        curl -fsSL https://raw.githubusercontent.com/SSharshunov/chaos_calmer/4.9-test/4.9.patch >> 4.9.patch
+        git apply --whitespace=nowarn 4.9.patch
+        rm -f 4.9.patch
 
     - name: Update feeds
-      run: cd openwrt && ./scripts/feeds update -a
+      run: cd openwrt && ./scripts/feeds update glutinium openipc
 
     - name: Install feeds
       run: cd openwrt && ./scripts/feeds install -a
+
+    - name: Load custom configuration
+      run: |
+        [ -e files ] && mv files openwrt/files
+        [ -e $CONFIG_FILE ] && mv ${{ matrix.config.config_file }} openwrt/.config
+        chmod +x $DIY_SH
+        cd openwrt
+        ../$DIY_SH ${{ matrix.config.SOC }} ${{ matrix.config.kernel_patch }}
 
     - name: SSH connection to Actions
       uses: P3TERX/debugger-action@master
@@ -90,7 +97,7 @@ jobs:
       run: |
         cd openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) V=s
+        make -j$(nproc)
         echo "::set-output name=status::success"
         find dl -size -1024c -exec ls -l {} \;
         find dl -size -1024c -exec rm -f {} \;
@@ -106,7 +113,7 @@ jobs:
       id: organize
       if: env.UPLOAD_FIRMWARE == 'true' && !cancelled()
       run: |
-        cd openwrt/bin/targets/*/*
+        cd openwrt/bin/*
         rm -rf packages
         echo "::set-env name=FIRMWARE::$PWD"
         echo "::set-output name=status::success"
